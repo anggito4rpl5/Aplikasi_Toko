@@ -62,7 +62,7 @@ class _TokoViewState extends State<TokoView> {
                     final item = toko![index];
 
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin:  EdgeInsets.only(bottom: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
                       ),
@@ -90,7 +90,7 @@ class _TokoViewState extends State<TokoView> {
                         ),
                         title: Text(
                           item.nama_barang ?? "Tanpa Nama",
-                          style: const TextStyle(
+                          style:  TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                           ),
