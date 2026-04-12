@@ -83,3 +83,37 @@ class AlertMessage {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
+
+Future showAlertDialog(BuildContext context) {
+    // set up the buttons
+    Widget cancelButton = MaterialButton(
+      shape: BeveledRectangleBorder(side: BorderSide()),
+      child: Text("Cancel"),
+      onPressed: () {
+        Navigator.of(context).pop({'status': false});
+      },
+    );
+    Widget continueButton = MaterialButton(
+      child: Text("Continue"),
+      onPressed: () {
+        Navigator.of(context).pop({'status': true});
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("AlertDialog"),
+      content: Text(
+          "Would you like to continue learning how to use Flutter alerts?"),
+      actions: [
+        cancelButton,
+        continueButton,
+      ],
+    );
+    // show the dialog
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
