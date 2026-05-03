@@ -15,6 +15,7 @@ class DashboardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       backgroundColor: const Color(0xFFF8FAFC), // Ultra light grey-blue
       body: Stack(
         children: [

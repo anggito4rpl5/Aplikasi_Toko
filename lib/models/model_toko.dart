@@ -5,15 +5,16 @@ class TokoModel {
   String? nama_barang;
   String? deskripsi;
   int? stok;
-  String? image;
   int? harga;
+  String? image;
+
   TokoModel({
     required this.id,
     required this.nama_barang,
     this.deskripsi,
     this.stok,
-    this.image,
     this.harga,
+    this.image,
   });
 
   TokoModel.fromJson(Map<String, dynamic> parsedJson) {
@@ -21,7 +22,20 @@ class TokoModel {
     nama_barang = parsedJson["nama_barang"];
     deskripsi = parsedJson["deskripsi"];
     stok = int.tryParse(parsedJson["stok"].toString());
-    image = "${url.BaseUrlTanpaApi}/${parsedJson["image"]}";
     harga = int.tryParse(parsedJson["harga"].toString());
+    image = "${url.BaseUrlTanpaApi}/${parsedJson["image"]}";
+ 
   }
+  Map<String, dynamic> toMap()  {
+  return {
+      "id": id,
+      "nama_barang": nama_barang,
+      "deskripsi": deskripsi,
+      "stok": stok,
+      "harga": harga,
+      "image": image,
+};
+
 }
+}
+

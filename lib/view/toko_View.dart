@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:postman/TambahBarang.dart';
 import 'package:postman/services/Toko.dart';
 
+
 class TokoView extends StatefulWidget {
   const TokoView({super.key});
 
@@ -10,7 +11,6 @@ class TokoView extends StatefulWidget {
 }
 
 class _TokoViewState extends State<TokoView> {
-  List action = ["Edit", "Delete"];
   List? toko;
   TokoService service = TokoService();
 
@@ -26,11 +26,13 @@ class _TokoViewState extends State<TokoView> {
   Future<void> ambilData() async {
     try {
       final response = await service.getToko();
+      if (!mounted) return;
       setState(() {
         toko = response.data;
       });
     } catch (e) {
       debugPrint("Error: $e");
+      if (!mounted) return;
       setState(() {
         toko = [];
       });
@@ -38,36 +40,51 @@ class _TokoViewState extends State<TokoView> {
   }
 
   Future<void> deleteItem(dynamic item, int index) async {
-    try {
-      final response = await service.hapusMovie(context, item.id);
-      if (response.status) {
-        setState(() {
-          toko!.removeAt(index);
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Item berhasil dihapus"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Gagal menghapus item"),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint("Error deleting: $e");
+  try {
+    // Pastikan id tidak null dan konversi ke String
+    final String id = item.id!.toString();
+    if (id.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Terjadi kesalahan saat menghapus"),
+          content: Text("ID barang tidak valid"),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    
+    final response = await service.hapusBarang(id);
+    if (!mounted) return;
+    
+    if (response.status) {
+      setState(() {
+        toko!.removeAt(index);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Item berhasil dihapus"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(response.message ?? "Gagal menghapus item"),
           backgroundColor: Colors.red,
         ),
       );
     }
+  } catch (e) {
+    debugPrint("Error deleting: $e");
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Terjadi kesalahan saat menghapus"),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
+}
 
   void showOptionsMenu(BuildContext context, dynamic item, int index) {
     showModalBottomSheet(
@@ -98,7 +115,8 @@ class _TokoViewState extends State<TokoView> {
               ),
               ListTile(
                 leading: const Icon(Icons.delete, color: Colors.red),
-                title: const Text("Delete", style: TextStyle(color: Colors.red)),
+                title: const Text("Delete",
+                    style: TextStyle(color: Colors.red)),
                 onTap: () {
                   Navigator.pop(context);
                   _showDeleteConfirmationDialog(context, item, index);
@@ -111,7 +129,8 @@ class _TokoViewState extends State<TokoView> {
     );
   }
 
-  void _showDeleteConfirmationDialog(BuildContext context, dynamic item, int index) {
+  void _showDeleteConfirmationDialog(
+      BuildContext context, dynamic item, int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -120,7 +139,8 @@ class _TokoViewState extends State<TokoView> {
             borderRadius: BorderRadius.circular(20),
           ),
           title: const Text("Konfirmasi Hapus"),
-          content: Text("Apakah Anda yakin ingin menghapus ${item.nama_barang}?"),
+          content:
+              Text("Apakah Anda yakin ingin menghapus ${item.nama_barang}?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
@@ -172,55 +192,56 @@ class _TokoViewState extends State<TokoView> {
         ],
       ),
       body: toko == null
-          ? const Center(child: CircularProgressIndicator(color: skyBlue))
-          : toko!.isEmpty
           ? const Center(
-              child: Text(
-                "Data toko kosong",
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            )
-          : GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 14,
-                mainAxisSpacing: 14,
-                childAspectRatio: 0.72,
-              ),
-              itemCount: toko!.length,
-              itemBuilder: (context, index) {
-                final item = toko![index];
-
-                return Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(18),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.06),
-                            blurRadius: 10,
-                            offset: const Offset(0, 6),
+              child: CircularProgressIndicator(color: skyBlue))
+          : toko!.isEmpty
+              ? const Center(
+                  child: Text(
+                    "Data toko kosong",
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 14,
+                    mainAxisSpacing: 14,
+                    childAspectRatio: 0.72,
+                  ),
+                  itemCount: toko!.length,
+                  itemBuilder: (context, index) {
+                    final item = toko![index];
+                    return Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(18),
+                            color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06), // fix
+                                blurRadius: 10,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // IMAGE
-                          ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(18),
-                            ),
-                            child: Image.network(
-                              item.image ?? "",
-                              height: 130,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(18),
+                                ),
+                                child: Image.network(
+                                  item.image ?? "",
+                                  height: 130,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (context, error, stackTrace) =>
+                                          Container(
                                     height: 130,
                                     color: Colors.grey[200],
                                     child: const Icon(
@@ -229,96 +250,89 @@ class _TokoViewState extends State<TokoView> {
                                       color: Colors.grey,
                                     ),
                                   ),
-                            ),
-                          ),
-
-                          // CONTENT
-                          Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.nama_barang ?? "Tanpa Nama",
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                  ),
                                 ),
-                                const SizedBox(height: 8),
-                                Row(
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
-                                    const Icon(
-                                      Icons.storefront,
-                                      size: 16,
-                                      color: skyBlue,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    const Text(
-                                      "Detail toko",
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: Colors.grey,
+                                    Text(
+                                      item.nama_barang ?? "Tanpa Nama",
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const Spacer(),
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: skyBlue.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Icon(
-                                        Icons.arrow_forward_ios_rounded,
-                                        size: 14,
-                                        color: darkBlue,
-                                      ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.storefront,
+                                            size: 16, color: skyBlue),
+                                        const SizedBox(width: 6),
+                                        const Text(
+                                          "Detail toko",
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.grey),
+                                        ),
+                                        const Spacer(),
+                                        Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                            color: skyBlue.withValues(alpha: 0.15), // fix
+                                            borderRadius:
+                                                BorderRadius.circular(8),
+                                          ),
+                                          child: const Icon(
+                                            Icons.arrow_forward_ios_rounded,
+                                            size: 14,
+                                            color: darkBlue,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.95), // fix
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.1), // fix
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
                               ],
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Three dots menu button
-                    Positioned(
-                      top: 8,
-                      right: 8,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                            child: IconButton(
+                              icon: const Icon(Icons.more_vert,
+                                  size: 20, color: Colors.grey),
+                              onPressed: () =>
+                                  showOptionsMenu(context, item, index),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 32,
+                                minHeight: 32,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.more_vert,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                          onPressed: () => showOptionsMenu(context, item, index),
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(
-                            minWidth: 32,
-                            minHeight: 32,
                           ),
                         ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
+                      ],
+                    );
+                  },
+                ),
     );
   }
 }

@@ -40,15 +40,13 @@ class _BottomNavState extends State<BottomNav> {
 
   void getLink(int index) {
     if (index == widget.activePage) return;
-    
-    // Logika Navigasi Persis Sesuai Modul
     if (role == "admin") {
       if (index == 0) Navigator.pushReplacementNamed(context, '/dashboard');
-      else if (index == 1) Navigator.pushReplacementNamed(context, '/Toko'); 
+      if (index == 1) Navigator.pushReplacementNamed(context, '/Toko');
     } else if (role == "user") {
       if (index == 0) Navigator.pushReplacementNamed(context, '/dashboard');
-      else if (index == 1) Navigator.pushReplacementNamed(context, '/pesan');
-   
+      if (index == 1) Navigator.pushReplacementNamed(context, '/pesan');
+      if (index == 2) Navigator.pushReplacementNamed(context, '/history');
     }
   }
 
@@ -56,93 +54,69 @@ class _BottomNavState extends State<BottomNav> {
   Widget build(BuildContext context) {
     if (isLoading || role == null) return const SizedBox.shrink();
 
-    // Menentukan daftar item berdasarkan role (Seperti logika Modul)
     List<Map<String, dynamic>> items = [];
     if (role == "admin") {
       items = [
-        {'label': 'Home', 'icon': Icons.grid_view_rounded},
-        {'label': 'Toko', 'icon': Icons.storefront_rounded},
-      ];
-    } else if (role == "kasir") {
-      items = [
-        {'label': 'Home', 'icon': Icons.grid_view_rounded},
-        {'label': 'Pesan', 'icon': Icons.receipt_long_rounded},
+        {'label': 'Home', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
+        {'label': 'Toko', 'icon': Icons.storefront_outlined, 'activeIcon': Icons.storefront_rounded},
       ];
     } else {
-      // Default untuk role user atau lainnya
       items = [
-        {'label': 'Home', 'icon': Icons.grid_view_rounded},
-        {'label': 'Katalog', 'icon': Icons.beach_access_rounded},
+        {'label': 'Home', 'icon': Icons.home_outlined, 'activeIcon': Icons.home},
+        {'label': 'Pesan', 'icon': Icons.shopping_bag_outlined, 'activeIcon': Icons.shopping_bag_rounded},
+        {'label': 'History', 'icon': Icons.receipt_long_outlined, 'activeIcon': Icons.receipt_long_rounded},
       ];
     }
 
-    double screenWidth = MediaQuery.of(context).size.width;
-    double navWidth = screenWidth - 60;
-    double itemWidth = navWidth / items.length;
-
-    // Render UI Premium dengan Logika Role
     return Container(
-      margin: const EdgeInsets.fromLTRB(30, 0, 30, 35),
-      height: 65,
+      margin: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+      height: 70,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(40),
+        borderRadius: BorderRadius.circular(35),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF0EA5E9).withOpacity(0.15),
-            blurRadius: 30,
-            offset: const Offset(0, 15),
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // HIGHLIGHT CAPSULE
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.elasticOut,
-            left: (widget.activePage * itemWidth) + (itemWidth / 2) - 45,
-            child: Container(
-              width: 90,
-              height: 42,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
-                ),
-                borderRadius: BorderRadius.circular(30),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: List.generate(items.length, (idx) {
+          final bool isSelected = widget.activePage == idx;
+          return GestureDetector(
+            onTap: () => getLink(idx),
+            behavior: HitTestBehavior.opaque,
+            child: SizedBox(
+              width: 72,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isSelected ? items[idx]['activeIcon'] : items[idx]['icon'],
+                    color: isSelected
+                        ? const Color.fromARGB(255, 33, 38, 182)
+                        : const Color.fromARGB(255, 28, 28, 30),
+                    size: 26,
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Color.fromARGB(255, 33, 38, 182),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
-          ),
-          
-          // ICONS
-          Row(
-            children: List.generate(items.length, (idx) {
-              bool isSelected = widget.activePage == idx;
-              return Expanded(
-                child: GestureDetector(
-                  onTap: () => getLink(idx),
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        items[idx]['icon'],
-                        color: isSelected ? Colors.white : const Color(0xFF0369A1).withOpacity(0.4),
-                        size: 24,
-                      ),
-                      if (isSelected)
-                        Text(
-                          items[idx]['label'],
-                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            }),
-          ),
-        ],
+          );
+        }),
       ),
     );
   }

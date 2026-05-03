@@ -19,6 +19,7 @@ class UserLogin {
     this.role,
   });
 
+
   Future prefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("status", status!);
