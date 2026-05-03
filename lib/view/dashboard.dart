@@ -49,7 +49,7 @@ class DashboardView extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Color(0x0D000000),
+                          color: Color.fromARGB(13, 27, 26, 26),
                           blurRadius: 30,
                           offset: Offset(0, -10),
                         )
